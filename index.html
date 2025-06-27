@@ -94,6 +94,31 @@
       60% { opacity: 0.88; transform: translate(-50%, -50%) scale(1.6);}
       100% { opacity: 0; transform: translate(-50%, -50%) scale(2);}
     }
+
+    /* DurianBot tile styling */
+    .durianbot-tile {
+      margin-bottom: 2em;
+      animation: fadeIn 1.2s forwards;
+      animation-delay: 0.88s;
+      opacity: 0;
+    }
+    .durianbot-tile a {
+      display: inline-block;
+      background: linear-gradient(90deg,#ffd200,#00c6ff);
+      color: #101e3a;
+      padding: 1em 1.5em;
+      border-radius: 14px;
+      font-weight: bold;
+      text-decoration: none;
+      box-shadow: 0 2px 10px #0072ff33;
+      transition: background .2s;
+      font-size: 1.1em;
+      letter-spacing: 0.5px;
+    }
+    .durianbot-tile a:hover {
+      background: linear-gradient(90deg, #0072ff, #ffd200);
+      color: #fff;
+    }
   </style>
 </head>
 <body>
@@ -101,6 +126,13 @@
 <div class="container">
   <div class="title">Welcome to LinkedBing GitHub</div>
   <div class="subtitle">Move your body move your mouse!</div>
+
+  <div class="durianbot-tile">
+    <a href="https://github.com/linkedbing/DurianBot?tab=readme-ov-file#%EF%B8%8F-sample-input--output" target="_blank">
+      AI Model + Business Data = Smarter, Custom Outputs
+    </a>
+  </div>
+
   <div class="footer">
     🚀 Created with GitHub Pages · <a href="https://www.linkedin.com/in/linkedbing/" target="_blank">@LinkedBing</a>
   </div>
