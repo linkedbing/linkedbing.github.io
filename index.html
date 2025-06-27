@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Welcome to LinkedBing GitHub</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    html, body {
+      height: 100%; margin: 0; font-family: 'Segoe UI', Arial, sans-serif;
+      color: #fff; min-height: 100vh; overflow: hidden;
+    }
+    #starfield {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      display: block; z-index: 0; background: #101e3a;
+    }
+    .container {
+      position: absolute; inset: 0; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; z-index: 2;
+      width: 100vw; height: 100vh; text-align: center;
+    }
+    .title {
+      font-size: 2.6em; font-weight: bold; margin-bottom: .2em;
+      background: linear-gradient(90deg, #ffd200, #00c6ff, #f7971e, #0072ff);
+      background-size: 200% auto;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: gradient-move 2.5s infinite alternate, fadeInUp 1s cubic-bezier(.76,.01,.3,1) forwards;
+      opacity: 0; letter-spacing: 1.5px;
+      text-shadow: 0 2px 12px rgba(0,0,0,0.13);
+    }
+    .subtitle, .footer {
+      opacity: 0; animation: fadeIn 1.2s forwards;
+    }
+    .subtitle { font-size: 1.2em; color: #e0e0e0; margin-bottom: 2em; animation-delay: .7s;}
+    .footer { margin-top: 2em; font-size: 1em; color: #b5e0ff;
+      text-shadow: 0 1px 3px #133c5f; letter-spacing: 1px; animation-delay: 1.0s;}
+    .footer a { color: #ffd200; text-decoration: none; border-bottom: 1px dashed #ffd200; transition: border .2s;}
+    .footer a:hover { border-bottom: 1px solid #fff;}
+    @keyframes gradient-move { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
+    @keyframes fadeIn { to{ opacity:1; } }
+    @keyframes fadeInUp { from{ opacity:0; transform:translateY(20px);} to{ opacity:1; transform:translateY(0);} }
+    @media (max-width:600px) {.title{font-size:1.3em;}.subtitle{font-size:1em;}}
+
+    /* Avatar trail effect styles */
+    @keyframes rainbow-shadow {
+      0%   { filter: drop-shadow(0 2px 8px #ff0040cc); }
+      16%  { filter: drop-shadow(0 2px 8px #ff8000cc); }
+      33%  { filter: drop-shadow(0 2px 8px #fff700cc); }
+      50%  { filter: drop-shadow(0 2px 8px #00ff40cc); }
+      66%  { filter: drop-shadow(0 2px 8px #00cfffcc); }
+      83%  { filter: drop-shadow(0 2px 8px #1400ffcc); }
+      100% { filter: drop-shadow(0 2px 8px #ff00e1cc); }
+    }
+    .avatar-tail {
+      position: fixed;
+      pointer-events: none;
+      width: 22px;
+      height: 22px;
+      transform: translate(-50%, -50%);
+      z-index: 9999;
+      opacity: 0.8;
+      animation: avatar-fade 0.85s linear forwards, rainbow-shadow 1.2s linear infinite;
+      will-change: opacity, transform, filter;
+      transition: opacity 0.2s, transform 0.2s;
+    }
+    @keyframes avatar-fade {
+      to { opacity: 0; transform: translate(-50%, -50%) scale(1.6);}
+    }
+    .trail-avatar {
+      position: fixed;
+      pointer-events: none;
+      width: 32px;
+      height: 32px;
+      transform: translate(-50%, -50%);
+      z-index: 9999;
+      animation: avatar-fade 1s linear forwards;
+      opacity: 1;
+      will-change: opacity, transform;
+    }
+    .clicked-avatar {
+      position: fixed;
+      pointer-events: none;
+      left: 0; top: 0;
+      width: 48px;
+      height: 48px;
+      transform: translate(-50%, -50%) scale(1);
+      z-index: 9999;
+      opacity: 0.95;
+      filter: drop-shadow(0 3px 18px #ffd200cc);
+      animation: clicked-avatar-pop 0.6s cubic-bezier(.3,1.6,.7,1) forwards;
+      will-change: opacity, transform;
+    }
+    @keyframes clicked-avatar-pop {
+      60% { opacity: 0.88; transform: translate(-50%, -50%) scale(1.6);}
+      100% { opacity: 0; transform: translate(-50%, -50%) scale(2);}
+    }
+  </style>
+</head>
+<body>
+<canvas id="starfield"></canvas>
+<div class="container">
+  <div class="title">Welcome to LinkedBing GitHub</div>
+  <div class="subtitle">Move your body move your mouse!</div>
+  <div class="footer">
+    🚀 Created with GitHub Pages · <a href="https://www.linkedin.com/in/linkedbing/" target="_blank">@LinkedBing</a>
+  </div>
+</div>
+<script>
+const avatarURL = "https://img-13.stickers.cloud/packs/c9ca6108-d723-4cb5-8fd7-3eb6ebcf1d9c/webp/22df098f-288f-4db6-b7b9-9a652fc0f791.webp";
+
+const canvas = document.getElementById('starfield');
+const ctx = canvas.getContext('2d');
+let w = window.innerWidth, h = window.innerHeight;
+
+function resize() {
+  w = window.innerWidth;
+  h = window.innerHeight;
+  canvas.width = w;
+  canvas.height = h;
+}
+window.addEventListener('resize', () => {
+  resize();
+  setupAvatars();
+});
+resize();
+
+const AVATAR_SIZE_MIN = 16;
+const AVATAR_SIZE_MAX = 32;
+const AVATAR_COUNT = 60;
+const avatars = [];
+function randomAvatarObj() {
+  return {
+    x: Math.random() * w,
+    y: Math.random() * h,
+    size: Math.random() * (AVATAR_SIZE_MAX - AVATAR_SIZE_MIN) + AVATAR_SIZE_MIN,
+    speed: Math.random() * 0.7 + 0.2,
+    alpha: Math.random() * 0.5 + 0.5
+  };
+}
+function respawnAvatar(av) {
+  av.x = Math.random() * w;
+  av.y = -av.size;
+  av.size = Math.random() * (AVATAR_SIZE_MAX - AVATAR_SIZE_MIN) + AVATAR_SIZE_MIN;
+  av.speed = Math.random() * 0.7 + 0.2;
+  av.alpha = Math.random() * 0.5 + 0.5;
+}
+function setupAvatars() {
+  avatars.length = 0;
+  for (let i = 0; i < AVATAR_COUNT; i++) {
+    avatars.push(randomAvatarObj());
+  }
+}
+setupAvatars();
+
+function animate() {
+  ctx.clearRect(0, 0, w, h);
+  for (let av of avatars) {
+    ctx.save();
+    ctx.globalAlpha = av.alpha;
+    if (avatarImg.complete && avatarImg.naturalWidth > 0) {
+      ctx.drawImage(
+        avatarImg,
+        av.x - av.size / 2,
+        av.y - av.size / 2,
+        av.size,
+        av.size
+      );
+    } else {
+      ctx.beginPath();
+      ctx.arc(av.x, av.y, av.size / 2, 0, 2 * Math.PI);
+      ctx.fillStyle = "#444";
+      ctx.fill();
+    }
+    ctx.restore();
+    av.y += av.speed;
+    if (av.y - av.size / 2 > h) {
+      respawnAvatar(av);
+    }
+  }
+  requestAnimationFrame(animate);
+}
+
+const avatarImg = new window.Image();
+avatarImg.onload = animate;
+avatarImg.onerror = animate;
+avatarImg.src = avatarURL;
+
+/* --- Cursor avatar trail and click effect --- */
+function createAvatarTail(x, y) {
+  const img = document.createElement('img');
+  img.className = 'avatar-tail';
+  img.src = avatarURL;
+  img.style.left = x + 'px';
+  img.style.top = y + 'px';
+  document.body.appendChild(img);
+  setTimeout(() => { img.remove(); }, 850);
+}
+function createAvatarTrail(x, y) {
+  const img = document.createElement('img');
+  img.className = 'trail-avatar';
+  img.src = avatarURL;
+  img.style.left = x + 'px';
+  img.style.top = y + 'px';
+  document.body.appendChild(img);
+  setTimeout(() => { img.remove(); }, 1000);
+}
+// Main clicked image, bigger, less fading
+function createClickedAvatar(x, y) {
+  const img = document.createElement('img');
+  img.className = 'clicked-avatar';
+  img.src = avatarURL;
+  img.style.left = x + 'px';
+  img.style.top = y + 'px';
+  document.body.appendChild(img);
+  setTimeout(() => { img.remove(); }, 650);
+}
+// Mouse move avatar trail
+let lastTrail = 0;
+document.addEventListener('mousemove', (e) => {
+  if (Date.now() - lastTrail > 12) { // limit for perf
+    createAvatarTail(e.clientX, e.clientY);
+    lastTrail = Date.now();
+  }
+});
+// Click burst effect (only 1 little avatar)
+document.addEventListener('click', (e) => {
+  setTimeout(() => createAvatarTrail(
+    e.clientX + (Math.random()-0.5)*24,
+    e.clientY + (Math.random()-0.5)*24
+  ), 0);
+  createClickedAvatar(e.clientX, e.clientY);
+});
+</script>
+</body>
+</html>
